@@ -1,9 +1,8 @@
 """Main API root configuration."""
 
-import logging
-
 import uvicorn
 from fastapi import FastAPI
+from loguru import logger
 
 from app.config import get_settings, setup_logging
 from app.routers import users
@@ -12,7 +11,6 @@ from app.routers import users
 app_settings = get_settings()
 
 setup_logging(log_level=app_settings.log_level)
-logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="My Small Python Project Template",
