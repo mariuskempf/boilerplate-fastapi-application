@@ -20,7 +20,7 @@ permissions:
 jobs:
   prepare:
     name: Generate image tag
-    runs-on: [ self-hosted, solinas ]
+    runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.tag.outputs.tag }}
     steps:

@@ -32,7 +32,7 @@ env:
 jobs:
   build-and-push:
     name: Build & Push Container Image
-    runs-on: [ self-hosted, solinas ]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

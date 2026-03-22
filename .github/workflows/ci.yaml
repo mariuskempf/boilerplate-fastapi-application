@@ -9,7 +9,7 @@ permissions:
 jobs:
   code-format:
     name: Code Formatting
-    runs-on: [ self-hosted, solinas ]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -33,7 +33,7 @@ jobs:
 
   linting:
     name: Code Linting
-    runs-on: [ self-hosted, solinas ]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -54,7 +54,7 @@ jobs:
 
   unit-tests:
     name: Unit Tests
-    runs-on: [ self-hosted, solinas ]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
