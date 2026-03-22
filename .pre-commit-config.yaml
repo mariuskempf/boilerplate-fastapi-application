@@ -1,13 +1,16 @@
-repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0  # Use the latest version available in https://github.com/pre-commit/pre-commit-hooks/releases
-    hooks:
-    -   id: check-merge-conflict
-        name: Check for merge conflict text
-    -   id: trailing-whitespace
-        name: Remove trailing whitespace
+# Pre-commit configuration file
+# See https://pre-commit.com for more information
 
-# Black - auto-formatting
+# Install locally with:
+# pre-commit install
+# pre-commit install --hook-type pre-push
+
+default_language_version:
+  python: python3.12
+
+repos:
+
+  # Black - auto-formatting
   - repo: https://github.com/psf/black-pre-commit-mirror
     # Using this mirror lets us use mypyc-compiled black, which is about 2x faster
     rev: 25.1.0
@@ -15,51 +18,71 @@ repos:
       - id: black
         name: Run Black formatting
         args: ["--config=pyproject.toml"]
-        language_version: python3.10
+        stages: [pre-commit]
 
-# Pylint - Python code linting
+  # Pylint - Python code linting
   - repo: https://github.com/pylint-dev/pylint
     rev: v3.3.7
     hooks:
     - id: pylint
-      name: Run pylint
-      entry: poetry run pylint
+      name: Lint code with Pylint
+      entry: uv run pylint
       args:
         [
-          "app",
-          "--rcfile=.pylintrc",
-          "--fail-under=9.0",
-          "--fail-on=E",
+          "--rcfile=pyproject.toml",
+          "--fail-under=8.0",
           "--output-format=colorized",
-          "--reports=false"
+          "--reports=false",
         ]
       language: system
-      pass_filenames: true # Pass changed filenames to pylint
       types: [python] # only run when python files where edited
+      stages: [pre-commit]
 
-# isort - sorting package imports
-  # - repo: https://github.com/pycqa/isort
-  #   rev: 5.11.2
-  #   hooks:
-  #     - id: isort
-  #       name: Run isort
+  # isort - sorting package imports
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: Sort imports with isort
+        args: ["--settings-path=pyproject.toml"]
+        stages: [pre-commit]
 
-# Shellcheck
-  -   repo: https://github.com/shellcheck-py/shellcheck-py
-      rev: v0.10.0.1
-      hooks:
-      -   id: shellcheck
-          name: Apply shellcheck
-          types: [shell]  # Ensures it runs only on shell scripts
-          # args: ["--severity=warning"]  # Optionally only show errors and warnings
+  # File validation
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+    -   id: trailing-whitespace
+        name: Remove trailing whitespace
+        stages: [pre-commit]
+    -   id: end-of-file-fixer
+        name: Ensure file ends with a newline
+        stages: [pre-commit]
+    # -   id: check-json # optional
+    #     name: Validate JSON files
+    #     stages: [pre-commit]
+    # -   id: check-yaml # optional
+    #     name: Validate YAML files
+    #    stages: [pre-commit]
 
-# Python Unit Tests
+  # Python Unit Tests
   - repo: local
     hooks:
     - id: pytest
       name: Run Pytest Unit Tests
-      entry: poetry run pytest
-      args: ["tests/"] # tell pytest to use the `tests/` directory
+      entry: uv run pytest
+      args: ["tests"]
       language: system
-      types: [python] # only run when python files where edited
-      pass_filenames: false # Don't pass changed filenames to pytest
+      pass_filenames: false
+      stages: [pre-push]
+
+
+
+# Shellcheck - shell script linting
+# ref: https://github.com/koalaman/shellcheck
+  # -   repo: https://github.com/shellcheck-py/shellcheck-py
+  #     rev: v0.10.0.1
+  #     hooks:
+  #     -   id: shellcheck
+  #         name: Apply shellcheck
+  #         types: [shell]  # Ensures it runs only on shell scripts
+  #         # args: ["--severity=warning"]  # Optionally only show errors and warnings
