@@ -1,28 +1,23 @@
 # ---------- Stage 1: Build ----------
-FROM python:3.10.14-slim AS builder
+FROM python:3.12.13-slim AS builder
 
-# Set environment variables for Poetry and Python
-ENV POETRY_VERSION=1.8.4 \
-    POETRY_VIRTUALENVS_CREATE=true \
-    POETRY_VIRTUALENVS_IN_PROJECT=true \
-    POETRY_NO_INTERACTION=1 \
-    PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    UV_PROJECT_ENVIRONMENT=/app/.venv
 
-# Install Poetry
-RUN pip install --no-cache-dir poetry==$POETRY_VERSION
+COPY --from=ghcr.io/astral-sh/uv:0.10.12 /uv /usr/local/bin/uv
 
 WORKDIR /app
 
 # Copy dependency files only
-COPY pyproject.toml poetry.lock ./
+COPY pyproject.toml uv.lock ./
 
 # Install only the main dependencies (not dev)
-RUN poetry install --no-root --only main
+RUN uv sync --frozen --no-dev --no-cache
 
 
 # ---------- Stage 2: Runtime ----------
-FROM python:3.10.14-slim AS runtime
+FROM python:3.12.13-slim AS runtime
 
 WORKDIR /
 
@@ -37,7 +32,7 @@ RUN useradd --create-home appuser
 # Copy virtual environment from builder stage
 COPY --from=builder /app/.venv /app/.venv
 
-# Copy application code
+# Copy application codefederated-exp-mnist
 COPY ./app ./app
 
 # use non-root user

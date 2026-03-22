@@ -1,0 +1,51 @@
+name: Build & Push (manual)
+run-name: Manual build from '${{ inputs.branch }}' by ${{ github.actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build'
+        required: true
+        default: 'main'
+        type: string
+      tag_suffix:
+        description: 'Optional image tag suffix (e.g. "test", "demo")'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Generate image tag
+    runs-on: [ self-hosted, solinas ]
+    outputs:
+      image_tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Generate tag
+        id: tag
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          BRANCH_SAFE=$(echo "${{ inputs.branch }}" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')
+          TAG="${BRANCH_SAFE}-${SHORT_SHA}"
+          if [ -n "${{ inputs.tag_suffix }}" ]; then
+            TAG="${TAG}-${{ inputs.tag_suffix }}"
+          fi
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+  build-and-push:
+    needs: prepare
+    uses: ./.github/workflows/cd.yaml
+    with:
+      ref: ${{ inputs.branch }}
+      image_tag: ${{ needs.prepare.outputs.image_tag }}
+    secrets:
+      REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+      REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
