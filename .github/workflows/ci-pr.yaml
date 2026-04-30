@@ -1,0 +1,13 @@
+name: Continuous Integration on PR
+run-name: >
+  PR #${{ github.event.pull_request.number }} -
+  '${{ github.event.pull_request.title }}'
+  by ${{ github.actor }}
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  CI:
+    uses: ./.github/workflows/ci.yaml

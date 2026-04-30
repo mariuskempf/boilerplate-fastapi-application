@@ -1,0 +1,23 @@
+name: CI/CD (main)
+run-name: Build & push triggered by ${{ github.actor }}
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  CI:
+    uses: ./.github/workflows/ci.yaml
+
+  CD:
+    needs: CI
+    uses: ./.github/workflows/cd.yaml
+    with:
+      ref: ${{ github.ref }}
+      image_tag: ${{ github.sha }}
+    secrets:
+      REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+      REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
